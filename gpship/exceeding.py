@@ -8,7 +8,7 @@ def f(x, threshold, num_proc=1, kws_ship={}):
     ''' The h function in paper
     
     x: array (n, 2) or (2, )
-        non-dimensional group parameter
+        dimensional group parameter (s, m)
     '''
     x = np.array(x)
     if x.ndim == 1:
@@ -28,7 +28,7 @@ def exceeding(x, threshold, num_l=2, Tp=15, phase=0, kws_ship={}):
     ''' The h function in paper
     
     x: array (2,)
-        non-dimensional group parameter
+        dimensional group parameter (s, m)
     '''
     L, A = x
     groupwave = GroupWave(A, L, phase, Tp)
