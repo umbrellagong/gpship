@@ -3,7 +3,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import WhiteKernel, RBF, ConstantKernel as C
 from joblib import Parallel, delayed
 from exceeding import f
-from acquisitions import AcqTemporal
+from gpship.gpship.acquisitions_ import AcqTemporal
 from inputs import Inputs
 from optimaldesign import OptimalDesign, compute_lh_results
 import warnings
