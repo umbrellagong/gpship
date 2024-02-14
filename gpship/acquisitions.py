@@ -5,10 +5,25 @@ from scipy.linalg import cho_solve
 
 H_UPPER= 10
 
+def truncnorm_mean(mu, sigma, left=0, right=1): 
+    res = mu - (sigma * (norm.pdf((right-mu) / sigma) 
+                         - norm.pdf((left-mu) / sigma)) / 
+                        (norm.cdf((right- mu) / sigma) 
+                         - norm.cdf((left-mu) / sigma)))
+    return  res
+
+def truncnorm_var(mu, sigma, left=0, right=1):
+    alpha, beta = (left - mu) / sigma,  (right - mu) / sigma
+    res = sigma**2 * (1 - (beta*norm.pdf(beta) - alpha*norm.pdf(alpha)) /
+                          (norm.cdf(beta) - norm.cdf(alpha))
+                         -((norm.pdf(beta) - norm.pdf(alpha)) /
+                          (norm.cdf(beta) - norm.cdf(alpha)))**2)
+    return  res
+    
 def variance_h(mu, sigma, c):
     # compute variance of S given random h
-    E = truncnorm.mean(- mu / sigma, (H_UPPER - mu) / sigma, mu, sigma)
-    V = truncnorm.var(- mu / sigma, (H_UPPER - mu) / sigma, mu, sigma)
+    E = truncnorm_mean(mu, sigma, 0, H_UPPER)
+    V = truncnorm_var(mu, sigma, 0, H_UPPER)
     return (norm.cdf(mu / sigma) * (c**2 * V + (c * E)**2) 
             - norm.cdf(mu / sigma)**2 * (c * E)**2)
 
