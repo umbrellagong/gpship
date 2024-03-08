@@ -70,7 +70,7 @@ class OptimalDesign():
         self.model = clone(model)
         exceeding_list = []
         
-        exceeding = self.fit_comp()
+        exceeding = self.fit_comp(self.model, self.DX, self.DY, self.inputs)
         exceeding_list.append(exceeding)
         
         for i in range(n_seq):
@@ -84,35 +84,28 @@ class OptimalDesign():
             self.DY = np.append(self.DY, self.f(opt_pos, self.threshold))
             print('pos: ', self.DX[-1], '  prob:', self.DY[-1])
                         
-            exceeding = self.fit_comp()
+            exceeding = fit_comp(self.model, self.DX, self.DY, self.inputs)
             exceeding_list.append(exceeding)
         return exceeding_list, self.DX
-        
-    def fit_comp(self):
-        '''fit the GP with samples and compute the exceeding prob'''
-        self.model.fit(self.DX, self.DY)
-        exceeding = self.model.predict(self.inputs.samples)
-        exceeding = sum(np.where(exceeding < 0, 0, exceeding)
-                * self.inputs.samples[:,0]) / (self.inputs.num_seeds 
-                                              * self.inputs.length)
-        return exceeding
-        
+
         
 def compute_lh_results(f, threshold, inputs, model, n_init, n_seq):
     '''LH sampling results for comparison'''
     
-    #DX = inputs.sampling(n_init + n_seq)
-    #DY = f(DX, threshold)
     model = copy.deepcopy(model)
     exceeding_list = []
     for i in range(n_init, n_init + n_seq + 1):
         DX = inputs.sampling(i)
         DY = f(DX, threshold)
-        model.fit(DX, DY)
-        #model.fit(DX[:i], DY[:i])
-        exceeding = model.predict(inputs.samples)
-        exceeding = sum(np.where(exceeding < 0, 0, exceeding)
-                * inputs.samples[:,0]) / (inputs.num_seeds * inputs.length)
+        exceeding = fit_comp(model, DX, DY, inputs)
         exceeding_list.append(exceeding)
-
     return exceeding_list
+
+
+def fit_comp(model, DX, DY, inputs):
+    '''fit the GP with samples and compute the exceeding prob'''
+    model.fit(DX, DY)
+    exceeding = model.predict(inputs.samples)
+    exceeding = sum(np.where(exceeding < 0, 0, exceeding)
+            * inputs.samples[:,0]) / (inputs.num_seeds * inputs.length)
+    return exceeding

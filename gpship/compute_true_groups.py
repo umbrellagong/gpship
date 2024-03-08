@@ -1,5 +1,4 @@
 import numpy as np
-from wave import LinearRandomWave
 from ship import compute_ship_roll
 from wave import GroupWave
 from joblib import Parallel, delayed

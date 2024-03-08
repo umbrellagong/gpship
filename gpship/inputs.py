@@ -1,7 +1,5 @@
 import numpy as np
 from pyDOE import lhs
-from wave import LinearRandomWave 
-from joblib import Parallel, delayed
 
 
 class Inputs():
