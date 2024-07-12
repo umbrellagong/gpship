@@ -2,7 +2,6 @@ import copy
 import numpy as np
 from scipy import optimize
 from sklearn.base import clone
-from joblib import Parallel, delayed
 
 
 class OptimalDesign():

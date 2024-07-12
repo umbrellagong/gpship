@@ -42,16 +42,16 @@ class LinearRandomWave():
             alpha = (self.Hs / 4)**2 / (self.gamma * np.sqrt(2 * pi))
             S = self._spectrum_gaussian
         else:
-            integration = integrate.quad(self._spectrum_jonswap_single, 
+            integration = integrate.quad(self._spectrum_jonswap, 
                                          0, 100 * self.wp, 
                                          args=(1, self.wp, self.gamma))[0]
             alpha = (self.Hs / 4) **2 / integration
             S = self._spectrum_jonswap
         # specify random phase
         np.random.seed(seed)
-        self.random_phase = np.atleast_2d(np.random.rand(num_mode) * 2*pi).T
+        self.random_phase = np.random.rand(num_mode) * 2*pi
         # specify amplitude
-        W = np.atleast_2d(np.arange(1, num_mode + 1)).T
+        W = np.arange(1, num_mode + 1)
         if whether_temporal:
             base = self.wp / base_scale    # frequence base
             self.Amplitude = np.sqrt(2 * S(W * base, alpha, self.wp, self.gamma) 
@@ -68,15 +68,16 @@ class LinearRandomWave():
         self.base = base
 
     def generate_wave(self, t=None, num_points=2048, whether_envelope=False):
-        W = np.atleast_2d(np.arange(1, self.num_mode + 1)).T
+        W = np.arange(1, self.num_mode + 1)
         
         if t is None:
             t = np.linspace(0, self.period, num_points, endpoint=False)
+            t = t.reshape(-1, 1)
 
         temp = self.Amplitude * np.cos(W*t*self.base + self.random_phase)
         
         if np.size(t) != 1:
-            elev = np.sum(temp, axis=0)
+            elev = np.sum(temp, axis=1)
             if whether_envelope:
                 return elev, np.abs(hilbert(elev))
             else:
@@ -90,17 +91,13 @@ class LinearRandomWave():
         '''
         return alpha * np.exp(- (W - wp)**2 / (2 * gamma**2))
 
-    def _spectrum_jonswap(self, W, alpha, wp, gamma): 
-        return np.array([self._spectrum_jonswap_single(w, alpha, wp, gamma) 
-                         for w in W])
-
-    def _spectrum_jonswap_single(self, w, alpha, wp, gamma): 
-        if w <= wp:
-            return (alpha * g ** 2 / w **5 * np.exp(-1.25 * wp**4 / w**4) 
-                   * gamma ** np.exp(- (w-wp)**2 / (2 * 0.07 **2 * wp**2)))
-        else:
-            return (alpha * g ** 2 / w **5 * np.exp(-1.25 * wp**4 / w**4) 
-                    * gamma ** np.exp(- (w-wp)**2 / (2 * 0.09 **2 * wp**2)))
+    def _spectrum_jonswap(self, W, alpha, wp, gamma):
+        '''
+        W is a one-d array
+        '''
+        para = np.where(W <= wp, 0.07, 0.09)
+        return (alpha * g ** 2 / W **5 * np.exp(-1.25 * wp**4 / W**4) 
+                   * gamma ** np.exp(- (W-wp)**2 / (2 * para **2 * wp**2)))
                     
                     
 class GroupWave(object):   
